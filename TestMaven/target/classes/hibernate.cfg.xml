@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+                        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+	<!-- session工厂hibernate -->
+	<session-factory>
+		<property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
+			<property name="hibernate.connection.url">jdbc:mysql://localhost:3306/day228</property>
+			<property name="hibernate.connection.username">root</property>
+			<property name="hibernate.connection.password">hxh123456</property>
+			<!-- 配置连接数据库所需要的常量 这些常量提供给hibernate连接数据库使用 show_sql 
+			我们是操作对象，看不到sql语句，
+			我们可以通过设置show_sql，hibernate运行操作数据库会把执行需要的sql语句输出到控制台中 -->
+			<!--自动创建|更新|验证数据库表结构,自动建立起表的结构, model类自动更新表结构-->
+		
+		<!-- hibernate可以帮助开发者创建表，开发者只需要创建实体类，下面的代码就是用用于开启此功能 -->
+		<property name="hibernate.hbm2ddl.auto">update</property>
+		<!-- 每次hibernate执行数据操作，把当前执行的sql语句进行输出 -->
+		<property name="show_sql">true</property>
+		<!-- 对打印的sql语句自动换行 -->
+		<property name="format_sql">true</property>
+		<!-- 配置方言 -->
+		<property name="dialect">org.hibernate.dialect.MySQL5Dialect</property>
+		
+	
+		<mapping resource="top/sssxinhui/entitys/Student.hbm.xml"/>
+		<mapping resource="top/sssxinhui/entitys/Score.hbm.xml"/>
+	</session-factory>
+	
+	
+</hibernate-configuration>
