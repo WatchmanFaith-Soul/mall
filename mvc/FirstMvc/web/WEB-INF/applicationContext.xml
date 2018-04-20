@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <context:component-scan base-package="com.hxh.dao" />
+
+    <mvc:annotation-driven />
+
+    <!--连接池-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="username" value="root"/>
+        <property name="password" value="hxh123456"/>
+        <property name="url" value="jdbc:mysql://localhost:3306/day39"/>
+    </bean>
+    <!--会话工厂-->
+    <bean  id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="mappingLocations" value="classpath:com/hxh/entity/*.hbm.xml"/>
+    </bean>
+    <!--模板-->
+    <bean class="org.springframework.orm.hibernate5.HibernateTemplate">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+
+    <bean id="transactionManager"
+          class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+        <property name="sessionFactory">
+            <!-- 指向自己的sessionfactory -->
+            <ref bean="sessionFactory" />
+        </property>
+    </bean>
+
+    <aop:config >
+
+        <!-- 事务到底应该在哪里开启，在哪里提交？ -->
+        <!-- 事务应该在service层开启和提交，因为一个service就一个业务逻辑，一个业务逻辑可能需要多个数据库操作步骤才能完成 -->
+        <!-- 如果把事务开启和提交放到dao层，那么每一个dao小的步骤完成之后都会直接提交，但此时整个service的业务逻辑可能未完成。 -->
+        <!-- 放在service也就是该业务对应的所有的dao代码执行完毕之后一同提交 -->
+        <aop:pointcut id="allServiceMethod" expression="execution(* com.hxh.*.*(..))" />
+
+        <!--aop:advisor和aop:aspect都是spring提供的aop配置标签那 -->
+        <!-- aspect是配置自定义的切面和切入点的关联关系 -->
+        <!-- aop:advisor是配置事务管理器和切入点（哪些类的哪些方法需要事务）的关联关系 -->
+        <aop:advisor pointcut-ref="allServiceMethod" advice-ref="txAdvice" />
+    </aop:config>
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <!-- REQUIRED表示必须强制使用事务，NOT_SUPPORTED表示不支持事务，查询不需要支持事务 -->
+            <tx:method name="save*" propagation="REQUIRED" />
+            <tx:method name="delete*" propagation="REQUIRED" />
+            <tx:method name="update*" propagation="REQUIRED" />
+            <tx:method name="get*" read-only="true" propagation="NOT_SUPPORTED" />
+            <tx:method name="select*" read-only="true" propagation="NOT_SUPPORTED" />
+            <tx:method name="login*" read-only="true" propagation="NOT_SUPPORTED" />
+            <tx:method name="*" read-only="true" />
+        </tx:attributes>
+    </tx:advice>
+
+</beans>
